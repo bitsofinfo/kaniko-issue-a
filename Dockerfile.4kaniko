@@ -1,0 +1,57 @@
+FROM alpine:3.11
+LABEL OGImageFrom="alpine:3.11"
+
+USER root 
+
+ENV ERROR_PAGE_ROOT_DIR="/my/app/barf/errorpages"
+
+RUN \
+    sed -i -e 's/root::/root:!:/' /etc/shadow && \ 
+    addgroup -g 9874 app && \
+    adduser -G app -u 9874 app -D -H -S && \
+    apk update && \
+    apk add \
+      apache2-proxy=2.4.43-r0 \
+      apache2-ssl=2.4.43-r0 \
+      bash=5.0.11-r1 \
+      curl=7.67.0-r0 \
+      jq=1.6-r0 \
+      && \
+    ln -s /etc/apache2 /etc/httpd && \
+    ln -s /usr/lib/apache2 /etc/httpd/modules && \
+    mv /etc/httpd/conf.d /etc/httpd/conf.modules.d && \
+    mv /etc/httpd/conf.modules.d/mpm.conf /etc/httpd/conf.modules.d/00-mpm.conf && \
+    \
+    mv /etc/httpd/conf.modules.d/ssl.conf /etc/httpd/conf.modules.d/ssl_conf.orig_disabled && \
+    sed -i -e 's/Listen 80/#Listen 80/' /etc/httpd/httpd.conf 
+
+COPY resources/welcome.conf resources/ssl.conf /etc/httpd/conf.d/
+COPY resources/errorpage.html resources/null.html $ERROR_PAGE_ROOT_DIR/
+
+# Entrypoint
+RUN touch /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
+RUN chmod 755 /entrypoint.sh && \
+    mkdir -p \
+        /dog/cat/beer/ \
+        /run/apache2/ \
+        /var/www/rproxy/nowhere/ \
+        $ERROR_PAGE_ROOT_DIR && \
+    chmod 777 \
+        /etc/httpd/conf.d \
+        /etc/httpd/conf.modules.d \
+        /run \
+        /run/apache2
+
+USER app
+
+RUN ls -al /etc/httpd
+
+RUN ls -al /etc/apache2
+
+COPY confs/ /etc/httpd/conf.d/
+
+RUN ls -al /etc/httpd
+
+RUN ls -al /etc/apache2
