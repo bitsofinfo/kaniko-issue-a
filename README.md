@@ -3,6 +3,8 @@
 Kaniko: `debug-v0.24.0`
 Docker: `19.03.8` on a mac
 
+https://github.com/GoogleContainerTools/kaniko/issues/1351
+
 ---
 
 Create cert for registry
