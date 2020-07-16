@@ -1,4 +1,9 @@
-# kaniko-bug-1
+# kaniko-issue-a
+
+Kaniko: `debug-v0.24.0`
+Docker: `19.03.8` on a mac
+
+---
 
 Create cert for registry
 ```
